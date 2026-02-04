@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit"; 
 
 export const authSlice = createSlice({
   name: "auth",
@@ -24,15 +24,20 @@ export const authSlice = createSlice({
       state.errorMessage = undefined;
     },
     onRegister: (state, { payload }) => {
-      // state.status = "authenticated";
       state.user = payload;
       state.errorMessage = undefined;
     },
+
     onAuthError: (state, { payload }) => {
-      state.status = "not-authenticated";
+      state.status = "not-authenticated"; 
       state.user = {};
       state.errorMessage = payload;
       state.isLoadingAuth = false;
+    },
+
+    onSetErrorMessage: (state, { payload }) => {
+        state.errorMessage = payload;
+        state.isLoadingAuth = false;
     },
     onLogout: (state, { payload }) => {
       state.status = "not-authenticated";
@@ -45,12 +50,12 @@ export const authSlice = createSlice({
   },
 });
 
-// Action creators are generated for each case reducer function
 export const {
   onChecking,
   onLogin,
   onRegister,
   onAuthError,
+  onSetErrorMessage,
   onLogout,
   onClearErrorMessage,
   onStartLoading,

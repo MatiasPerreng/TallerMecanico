@@ -7,6 +7,7 @@ import {
   onAuthError,
   onLogout,
   onStartLoading,
+  onSetErrorMessage, // Importamos la acción de error que no cierra sesión
 } from "../store/auth/authSlice";
 
 export const useAuthStore = () => {
@@ -15,12 +16,9 @@ export const useAuthStore = () => {
   );
   const dispatch = useDispatch();
 
-
   const startLogin = async ({ email, password }) => {
-    dispatch(onChecking());
     dispatch(onStartLoading());
     try {
-
       const { data } = await tallerMecanicoApi.post("/auth/login", {
         email,
         password,
@@ -28,7 +26,6 @@ export const useAuthStore = () => {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("token-init-date", new Date().getTime());
-
 
       dispatch(onLogin({ 
           uid: data.uid, 
@@ -38,7 +35,7 @@ export const useAuthStore = () => {
       }));
 
     } catch (error) {
-      
+      // Si el login falla, apagamos spinner y mostramos error
       const msg = error.response?.data?.detail || "Error en la autenticación";
       dispatch(onAuthError(msg));
       
@@ -48,11 +45,12 @@ export const useAuthStore = () => {
     }
   };
 
- 
   const startRegister = async ({ name, email, password }) => {
+    dispatch(onStartLoading());
     try {
       await tallerMecanicoApi.post("/auth/register", { name, email, password });
-
+      // Aquí podrías despachar una acción de éxito o apagar el loading
+      dispatch(onSetErrorMessage(null)); 
     } catch (error) {
       dispatch(onAuthError(error.response?.data?.detail || "Error en registro"));
       setTimeout(() => {
@@ -61,21 +59,27 @@ export const useAuthStore = () => {
     }
   };
 
-  //* Persistencia al recargar
+  //* Persistencia al recargar - CORREGIDO PARA EVITAR SPINNER ETERNO
   const checkAuthToken = async () => {
     const token = localStorage.getItem("token");
+    
+    // Si no hay token, no hay nada que cargar, salimos inmediatamente
     if (!token) return dispatch(onLogout());
 
     try {
-   
       const { data } = await tallerMecanicoApi.get("/auth/usuario");
       dispatch(onLogin(data));
     } catch (error) {
-      localStorage.clear();
-      dispatch(onLogout());
+
+      if (error.response?.status === 401) {
+          localStorage.clear();
+          dispatch(onLogout());
+      } else {
+   
+          dispatch(onSetErrorMessage("Error de conexión con el servidor"));
+      }
     }
   };
-
 
   const startLogout = () => {
     localStorage.clear();
@@ -83,10 +87,13 @@ export const useAuthStore = () => {
   };
 
   return {
+    //* Propiedades
     status,
     user,
     errorMessage,
     isLoadingAuth,
+
+    //* Metodos
     startLogin,
     startRegister,
     checkAuthToken,

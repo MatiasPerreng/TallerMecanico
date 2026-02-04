@@ -18,13 +18,13 @@ import { buscadorSlice } from "./cliente/buscadorSlice";
 
 export const store = configureStore({
   reducer: {
-    //* Acciones del cliente
+
     buscador: buscadorSlice.reducer,
 
-    //* Autenticacion para empleados
+
     auth: authSlice.reducer,
 
-    //* Acciones del dashboard del jefe
+
     cliente: clienteSlice.reducer,
     vehiculo: vehiculoSlice.reducer,
     orden: ordenSlice.reducer,
