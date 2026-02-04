@@ -17,42 +17,46 @@ export const clienteSlice = createSlice({
       state.activeCliente = payload;
     },
     onLoadClientes: (state, { payload = [] }) => {
-      state.isLoadingClientes = false;
-      //state.clientes = payload;
-      payload.forEach((cliente) => {
-        const exists = state.clientes.some(
-          (dbCliente) => dbCliente.id === cliente.id
-        );
-
-        if (!exists) {
-          state.clientes.push(cliente);
-        }
-      });
+      state.isLoadingClientes = false; // Detiene el spinner
+   
+      const newClientes = payload.filter(
+        (newCli) => !state.clientes.some((dbCli) => dbCli.id === newCli.id)
+      );
+      state.clientes = [...state.clientes, ...newClientes];
     },
     onAddNewCliente: (state, { payload }) => {
       state.clientes.push(payload);
       state.activeCliente = null;
+      state.isLoadingClientes = false;
     },
     onUpdateCliente: (state, { payload }) => {
+      state.isLoadingClientes = false; 
       state.clientes = state.clientes.map((cliente) => {
         if (cliente.id === payload.id) {
           return payload;
         }
         return cliente;
       });
+      state.activeCliente = null;
     },
-    onDeleteCliente: (state) => {
-      if (state.activeCliente) {
+    onDeleteCliente: (state, { payload }) => {
+
+      state.isLoadingClientes = false; 
+
+ 
+      const idToDelete = payload || (state.activeCliente ? state.activeCliente.id : null);
+      
+      if (idToDelete) {
         state.clientes = state.clientes.filter(
-          (cliente) => cliente.id !== state.activeCliente.id
+          (cliente) => cliente.id !== idToDelete
         );
-        state.activeCliente = null;
       }
+      
+      state.activeCliente = null;
     },
   },
 });
 
-// Action creators are generated for each case reducer function
 export const {
   onSetActiveCliente,
   onLoadClientes,

@@ -21,7 +21,7 @@ export const ModalActualizarCliente = ({
 
   const { startSavingEvent } = useClienteStore();
 
-  // Actualizar el estado si clienteData cambia
+
   useEffect(() => {
     if (clienteData) {
       setFormData(clienteData);
@@ -30,7 +30,7 @@ export const ModalActualizarCliente = ({
 
   const handleInputChangeCheckbox = (e) => {
     const { name, type, checked } = e.target;
-    // Para checkboxes usamos 'checked', de lo contrario 'value'
+
     const value = type === "checkbox" ? checked : e.target.value;
     setFormData({
       ...formData,
@@ -53,14 +53,14 @@ export const ModalActualizarCliente = ({
         title: "Error",
         text: "Los campos no pueden estar vacíos. En los campos opcionales, escriba 'N/A'.",
       });
-      return; // Detener el envío del formulario
+      return; 
     }
     startSavingEvent(formData);
     Swal.fire("Ok", "Cliente actualizado", "success");
     handleClose();
   };
 
-  if (!clienteData) return null; // No renderizar nada si clienteData es null
+  if (!clienteData) return null; 
 
   return (
     <Modal show={showModal} onHide={handleClose} centered backdrop="static">
