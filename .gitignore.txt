@@ -1,0 +1,10 @@
+# Backend
+BackendPY/venv/
+BackendPY/__pycache__/
+BackendPY/.env
+BackendPY/*.db
+
+# Frontend
+taller-mecanico-interfaz-main/node_modules/
+taller-mecanico-interfaz-main/dist/
+taller-mecanico-interfaz-main/.env.local

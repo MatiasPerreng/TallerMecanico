@@ -1,0 +1,102 @@
+.navbar-main {
+  background: #0f438c; /* Color principal del logo */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+}
+
+/* Nuevos estilos para el logo */
+.brand-logo {
+  height: 40px; /* Mantenemos altura original */
+  transition: all 0.3s ease;
+}
+
+.brand-text {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: white;
+  letter-spacing: -0.5px;
+}
+
+.text-accent {
+  color: #610a15; /* Nuevo color acento del logo */
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+  transition: all 0.3s ease;
+  color: #ffffff; /* Color iconos */
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.8) !important;
+  padding: 0.75rem 1.25rem !important;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-link.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: white !important;
+}
+
+.nav-link:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background: #63b3ed; /* Color acento */
+  transition: all 0.3s ease;
+}
+
+.btn-logout {
+  background: rgba(255, 255, 255, 0.1);
+  color: white !important;
+  border: 1px solid #63b3ed; /* Borde acentuado */
+  padding: 0.5rem 1.25rem !important;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+  background: #63b3ed; /* Color acento al hover */
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .navbar-collapse {
+    background: #2d3748; /* Fondo oscuro para móviles */
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  .brand-logo {
+    height: 35px; /* Reducir logo en móviles */
+  }
+
+  .nav-link {
+    margin: 0.5rem 0;
+  }
+
+  .btn-logout {
+    margin-top: 1rem;
+    width: 100%;
+  }
+}
+
+/* Toggler personalizado */
+.navbar-toggler {
+  border-color: #bee3f8 !important;
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23BEE3F8' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}

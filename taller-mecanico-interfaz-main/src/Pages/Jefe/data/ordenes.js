@@ -1,0 +1,40 @@
+export const ordenes = [
+  {
+    id: 1,
+    cliente_id: 7,
+    vehiculo_id: 8,
+    detalle_de_trabajos_a_realizar: "Omnis et minus voluptates blanditiis.",
+    recepcion: "2025-04-15",
+    prometido: "2025-05-21",
+    cambio_de_aceite: 1,
+    cambio_de_filtro: 0,
+    detalles_de_entrada_del_vehiculo:
+      "Sit dolor nemo ad quis pariatur. Consequatur quia fugit laboriosam laboriosam ab. Voluptatem sunt rem et et voluptatem quibusdam excepturi. Et atque sequi sed.",
+    created_at: "2025-04-25T17:14:05.000000Z",
+    updated_at: "2025-04-25T17:14:05.000000Z",
+    cliente: {
+      id: 7,
+      nombre: "Ronaldo",
+      email: "hackett.david@example.net",
+      rut: "70544280",
+      telefono: "(930) 410-6351",
+      domicilio:
+        "242 Estrella Ferry Suite 085\nWest Brittanystad, SC 37616-0197",
+      created_at: "2025-04-25T17:14:05.000000Z",
+      updated_at: "2025-04-25T17:14:05.000000Z",
+    },
+    vehiculo: {
+      id: 8,
+      modelo: "id",
+      marca: "Mayer, Deckow and Wisozk",
+      color: "Olive",
+      matricula: "VX-1945",
+      kilometraje: "6397",
+      numero_de_serie: "B2RBH8P29GAXR6FGL",
+      numero_de_motor: "6ZS6XP3F92",
+      fecha_de_compra: "2022-07-31",
+      created_at: "2025-04-25T17:14:05.000000Z",
+      updated_at: "2025-04-25T17:14:05.000000Z",
+    },
+  },
+];
