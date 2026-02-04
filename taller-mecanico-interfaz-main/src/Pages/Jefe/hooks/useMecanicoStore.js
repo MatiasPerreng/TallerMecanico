@@ -16,19 +16,21 @@ export const useMecanicoStore = () => {
   const startLoadingMecanico = async () => {
     try {
       const { data } = await tallerMecanicoApi.get(`/mecanicos`);
-      dispatch(onLoadMecanicos([...data.data]));
+
+      const mecanicosData = Array.isArray(data) ? data : (data.data || []);
+      
+      dispatch(onLoadMecanicos(mecanicosData));
+      
     } catch (error) {
-      console.log("Error al cargar", error);
+      console.error("Error al cargar mecánicos", error);
+      dispatch(onLoadMecanicos([]));
     }
   };
 
   return {
-    //* Propiedades
     activeMecanico,
     mecanicos,
     hasMecanicoClient: !!activeMecanico,
-
-    //* Metodos
     setActiveMecanico,
     startLoadingMecanico,
   };

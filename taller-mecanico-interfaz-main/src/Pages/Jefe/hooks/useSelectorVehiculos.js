@@ -12,28 +12,23 @@ export const useSelectorVehiculos = (showModal) => {
   }, [showModal]);
 
   const opcionesAgrupadas = useMemo(() => {
-    const grupos = {};
+    const grupos = { "": { label: "", options: [] } };
 
     vehiculos.forEach((vehiculo) => {
-      const categoriaNombre = "";
-
-      if (!grupos[categoriaNombre]) {
-        grupos[categoriaNombre] = {
-          label: categoriaNombre,
-          options: [],
-        };
-      }
+      const matricula = vehiculo.matricula || "";
+      const modelo = vehiculo.modelo || "";
+      const marca = vehiculo.marca || "";
 
       if (
-        vehiculo.matricula.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vehiculo.modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vehiculo.marca.toLowerCase().includes(searchTerm.toLowerCase())
+        matricula.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        marca.toLowerCase().includes(searchTerm.toLowerCase())
       ) {
-        grupos[categoriaNombre].options.push({
+        grupos[""].options.push({
           value: vehiculo.id,
-          label: `${vehiculo.modelo} ${vehiculo.marca} - ${
-            vehiculo.matricula
-          } | ${vehiculo.disponible ? "Disponible" : "No disponible"}`,
+          label: `${modelo} ${marca} - ${matricula} | ${
+            vehiculo.disponible ? "Disponible" : "No disponible"
+          }`,
         });
       }
     });
@@ -41,7 +36,6 @@ export const useSelectorVehiculos = (showModal) => {
     return Object.values(grupos);
   }, [vehiculos, searchTerm]);
 
-  // Recibimos setFormData como argumento
   const handleVehiculoChange = (selectedOption, setFormData) => {
     setFormData((prev) => ({
       ...prev,

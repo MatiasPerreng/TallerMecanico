@@ -12,24 +12,15 @@ export const useSelectorOrdenes = (showModal) => {
   }, [showModal]);
 
   const opcionesAgrupadas = useMemo(() => {
-    const grupos = {};
+    const grupos = { "": { label: "", options: [] } };
 
     ordenes.forEach((orden) => {
-      const categoriaNombre = "";
+      const nombreCliente = orden.cliente?.nombre || "Sin cliente";
 
-      if (!grupos[categoriaNombre]) {
-        grupos[categoriaNombre] = {
-          label: categoriaNombre,
-          options: [],
-        };
-      }
-
-      if (
-        orden.cliente.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-      ) {
-        grupos[categoriaNombre].options.push({
+      if (nombreCliente.toLowerCase().includes(searchTerm.toLowerCase())) {
+        grupos[""].options.push({
           value: orden.id,
-          label: `${orden.id} - Orden para: ${orden.cliente.nombre} | ${
+          label: `${orden.id} - Orden para: ${nombreCliente} | ${
             orden.disponible ? "Disponible" : "No disponible"
           }`,
         });
@@ -39,7 +30,6 @@ export const useSelectorOrdenes = (showModal) => {
     return Object.values(grupos);
   }, [ordenes, searchTerm]);
 
-  // Recibimos setFormData como argumento
   const handleOrdenChange = (selectedOption, setFormData) => {
     setFormData((prev) => ({
       ...prev,

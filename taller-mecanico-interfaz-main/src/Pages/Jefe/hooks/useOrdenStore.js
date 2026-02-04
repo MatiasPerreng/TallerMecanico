@@ -24,27 +24,36 @@ export const useOrdenStore = () => {
   const startLoadingOrdenes = async () => {
     try {
       dispatch(onStartLoading());
+      
       const { data } = await tallerMecanicoApi.get(`/ordenes`);
-      dispatch(onLoadOrdenes([...data.data]));
+      
+      const ordenesData = Array.isArray(data) ? data : (data.data || []);
+      
+      dispatch(onLoadOrdenes(ordenesData));
+      
     } catch (error) {
-      console.log("Error al cargar", error);
+      console.error("Error al cargar órdenes", error);
+      dispatch(onLoadOrdenes([]));
     }
   };
 
   const startSavingOrden = async (orden) => {
     try {
       if (orden.id) {
+        // Actualizar Orden
         await tallerMecanicoApi.put(`/ordenes/${orden.id}`, orden);
         dispatch(onUpdateOrden({ ...orden, user }));
-        return;
+        Swal.fire("Actualizado", "La orden se actualizó correctamente", "success");
       } else {
+        // Crear Orden
         const { data } = await tallerMecanicoApi.post("/ordenes", orden);
-        console.log(data);
         dispatch(onAddNewOrden({ ...data }));
+        Swal.fire("Guardado", "La orden se creó correctamente", "success");
       }
     } catch (error) {
-      console.log(error);
-      Swal.fire("Error al guardar", "Error extra;o", "error");
+      console.error(error);
+      const msg = error.response?.data?.detail || "Error al procesar la orden";
+      Swal.fire("Error al guardar", msg, "error");
     }
   };
 
@@ -52,9 +61,11 @@ export const useOrdenStore = () => {
     try {
       await tallerMecanicoApi.delete(`/ordenes/${orden.id}`);
       dispatch(onDeleteOrden());
+      Swal.fire("Eliminado", "La orden ha sido borrada", "success");
     } catch (error) {
-      console.log(error);
-      Swal.fire("Error al borrar", error.response.data?.message, "error");
+      console.error(error);
+      const msg = error.response?.data?.detail || "No se pudo eliminar la orden";
+      Swal.fire("Error al borrar", msg, "error");
     }
   };
 

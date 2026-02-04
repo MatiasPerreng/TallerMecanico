@@ -15,7 +15,6 @@ export const useCategoriaStore = () => {
   const { categorias, activeCategoria, isLoadingCategoria } = useSelector(
     (state) => state.categoria
   );
-
   const { user } = useSelector((state) => state.auth);
 
   const setActiveCategoria = (categoria) => {
@@ -26,9 +25,13 @@ export const useCategoriaStore = () => {
     try {
       dispatch(onStartLoading());
       const { data } = await tallerMecanicoApi.get(`/categorias`);
-      dispatch(onLoadCategorias([...data.data]));
+
+      const categoriasData = Array.isArray(data) ? data : (data.data || []);
+      dispatch(onLoadCategorias(categoriasData));
+      
     } catch (error) {
-      console.log("Error al cargar", error);
+      console.error("Error al cargar categorías", error);
+      dispatch(onLoadCategorias([]));
     }
   };
 
@@ -37,14 +40,16 @@ export const useCategoriaStore = () => {
       if (categoria.id) {
         await tallerMecanicoApi.put(`/categorias/${categoria.id}`, categoria);
         dispatch(onUpdateCategoria({ ...categoria, user }));
-        return;
+        Swal.fire("Éxito", "Categoría actualizada", "success");
       } else {
         const { data } = await tallerMecanicoApi.post("/categorias", categoria);
         dispatch(onAddNewCategoria({ ...data }));
+        Swal.fire("Éxito", "Categoría creada", "success");
       }
     } catch (error) {
-      console.log(error);
-      Swal.fire("Error al guardar", "Error", "error");
+      console.error(error);
+      const msg = error.response?.data?.detail || "Error al guardar categoría";
+      Swal.fire("Error al guardar", msg, "error");
     }
   };
 
@@ -52,20 +57,19 @@ export const useCategoriaStore = () => {
     try {
       await tallerMecanicoApi.delete(`/categorias/${categoria.id}`);
       dispatch(onDeleteCategoria());
+      Swal.fire("Eliminado", "Categoría borrada", "success");
     } catch (error) {
-      console.log(error);
-      Swal.fire("Error al borrar", error.response.data?.message, "error");
+      console.error(error);
+      const msg = error.response?.data?.detail || "No se pudo eliminar";
+      Swal.fire("Error al borrar", msg, "error");
     }
   };
 
   return {
-    //* Propiedades
     activeCategoria,
     categorias,
     isLoadingCategoria,
     hasClienteSelected: !!activeCategoria,
-
-    //* Metodos
     setActiveCategoria,
     startLoadingCategoria,
     startSavingCategoria,
