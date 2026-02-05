@@ -15,42 +15,45 @@ export const vehiculoSlice = createSlice({
       state.activeVehiculo = payload;
     },
     onLoadVehiculos: (state, { payload = [] }) => {
-      state.isLoadingVehiculos = false;
-      //state.vehiculos = payload;
-      payload.forEach((vehiculo) => {
-        const exists = state.vehiculos.some(
-          (dbVehiculo) => dbVehiculo.id === vehiculo.id
-        );
+      state.isLoadingVehiculos = false; // Mata el spinner
 
-        if (!exists) {
-          state.vehiculos.push(vehiculo);
-        }
-      });
+      state.vehiculos = payload; 
     },
     onAddNewVehiculo: (state, { payload }) => {
       state.vehiculos.push(payload);
       state.activeVehiculo = null;
+      state.isLoadingVehiculos = false; 
     },
     onUpdateVehiculo: (state, { payload }) => {
+      state.isLoadingVehiculos = false;
       state.vehiculos = state.vehiculos.map((vehiculo) => {
         if (vehiculo.id === payload.id) {
           return payload;
         }
         return vehiculo;
       });
+      state.activeVehiculo = null;
     },
-    onDeleteVehiculo: (state) => {
-      if (state.activeVehiculo) {
+    onDeleteVehiculo: (state, { payload }) => {
+      state.isLoadingVehiculos = false; 
+
+ 
+      const idToDelete = payload || (state.activeVehiculo ? state.activeVehiculo.id : null);
+
+      if (idToDelete) {
         state.vehiculos = state.vehiculos.filter(
-          (vehiculo) => vehiculo.id !== state.activeVehiculo.id
+          (vehiculo) => vehiculo.id !== idToDelete
         );
-        state.activeVehiculo = null;
       }
+      state.activeVehiculo = null;
     },
+
+    onStopLoadingVehiculos: (state) => {
+      state.isLoadingVehiculos = false;
+    }
   },
 });
 
-// Action creators are generated for each case reducer function
 export const {
   onSetActiveVehiculo,
   onLoadVehiculos,
@@ -58,4 +61,5 @@ export const {
   onUpdateVehiculo,
   onDeleteVehiculo,
   onStartLoading,
+  onStopLoadingVehiculos
 } = vehiculoSlice.actions;

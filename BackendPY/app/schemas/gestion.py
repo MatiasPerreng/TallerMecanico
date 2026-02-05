@@ -2,7 +2,6 @@ from pydantic import BaseModel, ConfigDict
 from datetime import date, datetime
 from typing import Optional
 
-
 class VehiculoBase(BaseModel):
     matricula: str
     modelo: str
@@ -21,6 +20,8 @@ class VehiculoCreate(VehiculoBase):
 class VehiculoOut(VehiculoBase):
     """Se usa para devolver datos del vehículo al frontend"""
     id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -28,7 +29,7 @@ class VehiculoOut(VehiculoBase):
 class OrdenBase(BaseModel):
     cliente_id: int
     vehiculo_id: int
-    detalle_de_trabajos_a_realizar: Optional[str] = None
+    detalle_de_trabajos_a_realizar: Optional[str] = "N/A"
     recepcion: date
     prometido: Optional[date] = None
     cambio_de_aceite: bool = False
@@ -47,6 +48,7 @@ class OrdenOut(OrdenBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+
 class InspeccionFrenosBase(BaseModel):
     orden_id: int
     frenos_delanteros: str
@@ -60,6 +62,7 @@ class InspeccionFrenosCreate(InspeccionFrenosBase):
 class InspeccionFrenosOut(InspeccionFrenosBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
+
 
 
 class ProductoBase(BaseModel):
@@ -79,16 +82,16 @@ class ProductoOut(ProductoBase):
 
 
 
-class OrdenRepuestoCreate(BaseModel):
-    """Asocia un producto de stock con una orden específica"""
+class OrdenRepuestoBase(BaseModel):
     orden_id: int
     producto_id: int
     cantidad: int
 
-class OrdenRepuestoOut(BaseModel):
+class OrdenRepuestoCreate(OrdenRepuestoBase):
+    """Asocia un producto de stock con una orden específica"""
+    pass
+
+class OrdenRepuestoOut(OrdenRepuestoBase):
     id: int
-    orden_id: int
-    producto_id: int
-    cantidad: int
     precio_unitario: float
     model_config = ConfigDict(from_attributes=True)

@@ -1,4 +1,3 @@
-# app/crud/vehiculos.py (o gestion.py)
 from sqlalchemy.orm import Session
 from app.models.clientes_vehiculos import Vehiculo
 from app.schemas.gestion import VehiculoCreate 
@@ -16,15 +15,22 @@ def get_vehiculo_by_matricula(db: Session, matricula: str):
     return db.query(Vehiculo).filter(Vehiculo.matricula == matricula).first()
 
 def create_vehiculo(db: Session, vehiculo: VehiculoCreate):
-    """Alta de vehículo"""
-    db_vehiculo = Vehiculo(**vehiculo.model_dump())
+    """Alta de vehículo con validación de campos segura"""
+
+    vehiculo_data = vehiculo.model_dump()
+    
+    model_columns = Vehiculo.__table__.columns.keys()
+    safe_data = {k: v for k, v in vehiculo_data.items() if k in model_columns}
+    
+    db_vehiculo = Vehiculo(**safe_data)
+    
     db.add(db_vehiculo)
     db.commit()
     db.refresh(db_vehiculo)
     return db_vehiculo
 
 def update_vehiculo(db: Session, vehiculo_id: int, vehiculo_data: VehiculoCreate):
-    """Modificación de vehículo"""
+    """Modificación de vehículo con mapeo dinámico"""
     db_vehiculo = db.query(Vehiculo).filter(Vehiculo.id == vehiculo_id).first()
     
     if not db_vehiculo:
@@ -32,8 +38,12 @@ def update_vehiculo(db: Session, vehiculo_id: int, vehiculo_data: VehiculoCreate
     
 
     update_data = vehiculo_data.model_dump()
+    model_columns = Vehiculo.__table__.columns.keys()
+    
     for key, value in update_data.items():
-        setattr(db_vehiculo, key, value)
+   
+        if key in model_columns:
+            setattr(db_vehiculo, key, value)
     
     db.commit()
     db.refresh(db_vehiculo)

@@ -23,8 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Inclusión de Rutas
-# Importante: Agregamos prefijos para que coincidan con tu Axios del frontend
+
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(clientes.router, prefix="/api/clientes", tags=["Clientes"])
 app.include_router(vehiculos.router, prefix="/api/vehiculos", tags=["Vehículos"])

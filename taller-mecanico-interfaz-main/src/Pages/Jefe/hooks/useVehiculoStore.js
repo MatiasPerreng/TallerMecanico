@@ -24,30 +24,28 @@ export const useVehiculoStore = () => {
   const startLoadingVehiculos = async () => {
     try {
       dispatch(onStartLoading());
-      
       const { data } = await tallerMecanicoApi.get(`/vehiculos`);
       
-  
+     
       const vehiculosData = Array.isArray(data) ? data : (data.data || []);
       
       dispatch(onLoadVehiculos(vehiculosData));
-      
     } catch (error) {
       console.error("Error al cargar vehículos:", error);
-    
-      dispatch(onLoadVehiculos([]));
+
+      dispatch(onLoadVehiculos(vehiculos || []));
     }
   };
 
   const startSavingVehiculo = async (vehiculo) => {
     try {
       if (vehiculo.id) {
-
-        await tallerMecanicoApi.put(`/vehiculos/${vehiculo.id}`, vehiculo);
-        dispatch(onUpdateVehiculo({ ...vehiculo, user }));
+   
+        const { data } = await tallerMecanicoApi.put(`/vehiculos/${vehiculo.id}`, vehiculo);
+        dispatch(onUpdateVehiculo({ ...data, user }));
         Swal.fire("Actualizado", "Vehículo actualizado con éxito", "success");
       } else {
-  
+        // CREAR
         const { data } = await tallerMecanicoApi.post("/vehiculos", vehiculo);
         dispatch(onAddNewVehiculo({ ...data }));
         Swal.fire("Guardado", "Vehículo registrado con éxito", "success");
@@ -56,23 +54,32 @@ export const useVehiculoStore = () => {
       console.error(error);
       const msg = error.response?.data?.detail || "Error al procesar los datos del vehículo";
       Swal.fire("Error al guardar", msg, "error");
+      
+   
+      dispatch(onLoadVehiculos(vehiculos));
     }
   };
 
   const startDeletingVehiculo = async (vehiculo) => {
     try {
+
       await tallerMecanicoApi.delete(`/vehiculos/${vehiculo.id}`);
-      dispatch(onDeleteVehiculo());
+      
+
+      dispatch(onDeleteVehiculo(vehiculo.id));
+      
       Swal.fire("Eliminado", "El vehículo ha sido eliminado", "success");
     } catch (error) {
       console.error(error);
       const msg = error.response?.data?.detail || "No se pudo eliminar el vehículo";
       Swal.fire("Error al borrar", msg, "error");
+      
+
+      dispatch(onLoadVehiculos(vehiculos));
     }
   };
 
   return {
-
     activeVehiculo,
     vehiculos,
     isLoadingVehiculos,

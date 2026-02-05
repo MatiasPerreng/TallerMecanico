@@ -1,4 +1,4 @@
-import { Form, Modal, Button } from "react-bootstrap";
+import { Form, Modal, Button, Row, Col, InputGroup } from "react-bootstrap";
 import Select from "react-select";
 import { useSelectorClientes } from "../hooks/useSelectorClientes";
 import { useSelectorVehiculos } from "../hooks/useSelectorVehiculos";
@@ -10,22 +10,20 @@ const createOrdenField = {
   cliente_id: "",
   vehiculo_id: "",
   detalle_de_trabajos_a_realizar: "",
-  recepcion: "",
+  recepcion: new Date().toISOString().split("T")[0],
   prometido: "",
-  cambio_de_aceite: "",
-  cambio_de_filtro: "",
+  cambio_de_aceite: false,
+  cambio_de_filtro: false,
   detalles_de_entrada_del_vehiculo: "",
 };
 
 export const ModalCrearOrden = ({ showModal, handleClose }) => {
-  const { opcionesAgrupadas, setSearchTerm } = useSelectorClientes(showModal);
+
+  const { opcionesAgrupadas, setSearchTerm: setSearchCliente } = useSelectorClientes(showModal);
+  const { opcionesAgrupadas: opcionesVehiculos, setSearchTerm: setSearchVehiculo } = useSelectorVehiculos(showModal);
 
   const {
-    opcionesAgrupadas: opcionesAgrupadasVehiculos,
-    setSearchTerm: setSearchTermVehiculo,
-  } = useSelectorVehiculos(showModal);
-
-  const {
+    formState,
     cliente_id,
     vehiculo_id,
     detalle_de_trabajos_a_realizar,
@@ -34,8 +32,8 @@ export const ModalCrearOrden = ({ showModal, handleClose }) => {
     cambio_de_aceite,
     cambio_de_filtro,
     detalles_de_entrada_del_vehiculo,
-
     onInputChange,
+    onResetForm,
   } = useForm(createOrdenField);
 
   const { startSavingOrden } = useOrdenStore();
@@ -45,190 +43,170 @@ export const ModalCrearOrden = ({ showModal, handleClose }) => {
     onInputChange({ target: { name, value: checked } });
   };
 
-  // Manejar envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+
     if (!cliente_id) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Debe seleccionar un cliente.",
-      });
-      return;
+      return Swal.fire("Error", "Debe seleccionar un cliente.", "error");
     }
-
     if (!vehiculo_id) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Debe seleccionar un vehiculo.",
-      });
-      return;
+      return Swal.fire("Error", "Debe seleccionar un vehículo.", "error");
     }
 
-    startSavingOrden({
-      cliente_id,
-      vehiculo_id,
-      detalle_de_trabajos_a_realizar,
-      recepcion,
-      prometido,
-      cambio_de_aceite,
-      cambio_de_filtro,
-      detalles_de_entrada_del_vehiculo,
+    const success = await startSavingOrden({
+      ...formState,
+
+      detalle_de_trabajos_a_realizar: detalle_de_trabajos_a_realizar || "N/A",
+      detalles_de_entrada_del_vehiculo: detalles_de_entrada_del_vehiculo || "N/A",
+      prometido: prometido || "1900-01-01", 
     });
 
-    Swal.fire(
-      "Ok",
-      "Orden creada. Se recargará la página para guardar cambios.",
-      "success"
-    );
-    setTimeout(() => {
-      location.reload();
-    }, 1500);
-    handleClose();
+    if (success) {
+      Swal.fire("Éxito", "Orden creada correctamente", "success");
+      onResetForm();
+      handleClose();
+    }
   };
 
   return (
-    <>
-      {/* Modal para agregar nueva orden */}
-      <Modal show={showModal} onHide={handleClose} centered backdrop="static">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <h4>Crear Nueva Orden</h4>
-            {/* <p className="text-danger small">
-              Advertencia: Si la página queda congelada después de cerrar el
-              modal, recárguela.
-            </p> */}
-          </Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleSubmit}>
-          <Modal.Body>
-            <Form.Group className="mb-3">
-              <Form.Label>Cliente</Form.Label>
-              <div className="mb-2">
-                {/* <InputGroup className="mb-2">
-                  <Form.Control
-                    type="text"
-                    placeholder="Buscar cliente..."
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </InputGroup> */}
+    <Modal show={showModal} onHide={handleClose} centered backdrop="static" size="lg">
+      <Modal.Header closeButton className="bg-primary text-white">
+        <Modal.Title>
+          <i className="bi bi-file-earmark-plus me-2"></i>
+          Crear Nueva Orden de Trabajo
+        </Modal.Title>
+      </Modal.Header>
 
+      <Form onSubmit={handleSubmit}>
+        <Modal.Body className="p-4">
+          <Row>
+   
+            <Col md={6} className="mb-3">
+              <Form.Group>
+                <Form.Label className="fw-bold">Cliente</Form.Label>
                 <Select
                   options={opcionesAgrupadas}
+                  onInputChange={(v) => setSearchCliente(v)}
                   onChange={(selected) =>
                     onInputChange({
-                      target: { name: "cliente_id", value: selected.value },
+                      target: { name: "cliente_id", value: selected?.value },
                     })
                   }
-                  placeholder="Seleccione un cliente"
+                  placeholder="Buscar cliente..."
                   noOptionsMessage={() => "No se encontraron clientes"}
+                  isClearable
                 />
-              </div>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Vehiculo</Form.Label>
-              <div className="mb-2">
-                {/* SE QUITÓ EL INPUT DE BÚSQUEDA QUE NO HACÍA NADA */}
+              </Form.Group>
+            </Col>
+
+    
+            <Col md={6} className="mb-3">
+              <Form.Group>
+                <Form.Label className="fw-bold">Vehículo</Form.Label>
                 <Select
-                  options={opcionesAgrupadasVehiculos}
+                  options={opcionesVehiculos}
+                  onInputChange={(v) => setSearchVehiculo(v)}
                   onChange={(selected) =>
                     onInputChange({
-                      target: { name: "vehiculo_id", value: selected.value },
+                      target: { name: "vehiculo_id", value: selected?.value },
                     })
                   }
-                  placeholder="Seleccione un vehiculo"
-                  noOptionsMessage={() => "No se encontraron vehiculos"}
+                  placeholder="Buscar vehículo..."
+                  noOptionsMessage={() => "No se encontraron vehículos"}
+                  isClearable
                 />
-              </div>
-            </Form.Group>
+              </Form.Group>
+            </Col>
+          </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Label>
-                Detalles de trabajos a realizar (Opcional)
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                name="detalle_de_trabajos_a_realizar"
-                value={detalle_de_trabajos_a_realizar}
-                onChange={onInputChange}
-              />
-              <Form.Text className="text-muted">
-                Este campo es opcional, al dejarse vacío se colocará por defecto
-                un 'N/A'.
-              </Form.Text>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Fecha de Recepción</Form.Label>
-              <Form.Control
-                type="date"
-                name="recepcion"
-                value={recepcion}
-                onChange={onInputChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Fecha Prometida (Opcional)</Form.Label>
-              <Form.Control
-                type="date"
-                name="prometido"
-                value={prometido}
-                onChange={onInputChange}
-              />
-              <Form.Text className="text-muted">
-                Este campo es opcional, al dejarse vacío se colocará por defecto
-                una fecha que el sistema detectará como no definida.
-              </Form.Text>
-            </Form.Group>
-            <Form.Group className="mb-3">
+          <hr />
+
+          <Row>
+
+            <Col md={6} className="mb-3">
+              <Form.Group>
+                <Form.Label className="fw-bold">Fecha de Recepción</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="recepcion"
+                  value={recepcion}
+                  onChange={onInputChange}
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6} className="mb-3">
+              <Form.Group>
+                <Form.Label className="fw-bold">Fecha Prometida (Opcional)</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="prometido"
+                  value={prometido}
+                  onChange={onInputChange}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <div className="bg-light p-3 rounded mb-3 border">
+            <h6 className="fw-bold mb-3 text-secondary">Mantenimiento Preventivo</h6>
+            <div className="d-flex gap-4">
               <Form.Check
                 type="checkbox"
                 name="cambio_de_aceite"
-                label="Cambio de aceite"
+                id="aceite"
+                label="Cambio de Aceite"
                 checked={cambio_de_aceite}
                 onChange={handleInputChangeCheckbox}
               />
-            </Form.Group>
-            <Form.Group className="mb-3">
               <Form.Check
                 type="checkbox"
                 name="cambio_de_filtro"
-                label="Cambio de filtro"
+                id="filtro"
+                label="Cambio de Filtro"
                 checked={cambio_de_filtro}
                 onChange={handleInputChangeCheckbox}
               />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>
-                Detalles de entrada de vehiculo (Opcional)
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                name="detalles_de_entrada_del_vehiculo"
-                value={detalles_de_entrada_del_vehiculo}
-                onChange={onInputChange}
-              />
-              <Form.Text className="text-muted">
-                Este campo es opcional, al dejarse vacío se colocará por defecto
-                un 'N/A'.
-              </Form.Text>
-            </Form.Group>
-          </Modal.Body>
+            </div>
+          </div>
 
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
-              Cancelar
-            </Button>
-            <Button className="btn btn-success" variant="primary" type="submit">
-              Guardar Cambios
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
-    </>
+
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">Detalles de Trabajos a Realizar</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={3}
+              name="detalle_de_trabajos_a_realizar"
+              value={detalle_de_trabajos_a_realizar}
+              onChange={onInputChange}
+              placeholder="Describa el problema o el servicio solicitado..."
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">Detalles de Entrada del Vehículo</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={2}
+              name="detalles_de_entrada_del_vehiculo"
+              value={detalles_de_entrada_del_vehiculo}
+              onChange={onInputChange}
+              placeholder="Ej: Rayón en puerta izquierda, tanque a 1/4..."
+            />
+          </Form.Group>
+        </Modal.Body>
+
+        <Modal.Footer className="bg-light">
+          <Button variant="outline-secondary" onClick={handleClose}>
+            Cancelar
+          </Button>
+          <Button variant="primary" type="submit" className="px-4">
+            <i className="bi bi-save me-2"></i>
+            Guardar Orden
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal>
   );
 };
