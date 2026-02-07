@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routes import auth, clientes, vehiculos, ordenes 
+from app.routes import auth, clientes, vehiculos, ordenes, users
 import app.models as models 
 
 Base.metadata.create_all(bind=engine)
@@ -28,6 +28,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(clientes.router, prefix="/api/clientes", tags=["Clientes"])
 app.include_router(vehiculos.router, prefix="/api/vehiculos", tags=["Vehículos"])
 app.include_router(ordenes.router, prefix="/api/ordenes", tags=["Órdenes"])
+app.include_router(users.router, prefix="/api")
 
 @app.get("/")
 def root():
