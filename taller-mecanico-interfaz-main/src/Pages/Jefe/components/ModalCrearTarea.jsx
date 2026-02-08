@@ -14,12 +14,8 @@ const createTareaField = {
 };
 
 export const ModalCrearTarea = ({ showModal, handleClose }) => {
-  const { opcionesAgrupadas, setSearchTerm } = useSelectorOrdenes(showModal);
-
-  const {
-    opcionesAgrupadas: opcionesAgrupadasMecanico,
-    setSearchTerm: setSearchTermMecanico,
-  } = useSelectorMecanicos(showModal);
+  const { opcionesAgrupadas } = useSelectorOrdenes(showModal);
+  const { opcionesAgrupadas: opcionesAgrupadasMecanico } = useSelectorMecanicos(showModal);
 
   const {
     orden_id,
@@ -27,6 +23,7 @@ export const ModalCrearTarea = ({ showModal, handleClose }) => {
     estado_de_trabajo,
     notificacion_al_cliente,
     onInputChange,
+    onResetForm,
   } = useForm(createTareaField);
 
   const { startSavingTarea } = useTareaStore();
@@ -34,97 +31,67 @@ export const ModalCrearTarea = ({ showModal, handleClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validar campos requeridos
-    if (!orden_id) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Debe seleccionar una orden.",
-      });
-      return;
+    // Validaciones de cliente
+    if (!orden_id || !mecanico_id || !estado_de_trabajo) {
+      return Swal.fire("Error", "Los campos Orden, Mecánico y Estado son obligatorios.", "error");
     }
 
-    if (!mecanico_id) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Debe seleccionar un mecánico.",
-      });
-      return;
-    }
-
-    if (!estado_de_trabajo) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Debe seleccionar un estado de trabajo.",
-      });
-      return;
-    }
-
-    startSavingTarea({
-      orden_id,
-      mecanico_id,
+    // Preparar objeto con TIPOS CORRECTOS
+    const tareaData = {
+      orden_id: parseInt(orden_id, 10),
+      mecanico_id: parseInt(mecanico_id, 10),
       estado_de_trabajo,
-      notificacion_al_cliente,
-    });
+      notificacion_al_cliente: notificacion_al_cliente.trim() || "N/A",
+    };
 
-    Swal.fire(
-      "Ok",
-      "Tarea creada. Se recargará la página para guardar los cambios.",
-      "success"
-    );
-    setTimeout(() => {
-      location.reload();
-    }, 1500);
-    handleClose();
+    try {
+      // Intentar guardar
+      await startSavingTarea(tareaData);
+
+      // Si startSavingTarea no lanza error, procedemos
+      await Swal.fire("Éxito", "Tarea creada correctamente.", "success");
+      
+      onResetForm();
+      handleClose();
+
+      // Recarga controlada o actualización de estado
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      Swal.fire("Error", "No se pudo crear la tarea. Revisa la conexión o los datos.", "error");
+    }
   };
 
   return (
     <Modal show={showModal} onHide={handleClose} centered backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>
-          <h4>Crear Nueva Tarea</h4>
-          {/* <p className="text-danger small">
-            Advertencia: Si la página queda congelada después de cerrar el
-            modal, recárguela.
-          </p> */}
-        </Modal.Title>
+        <Modal.Title><h4>Crear Nueva Tarea</h4></Modal.Title>
       </Modal.Header>
       <Form onSubmit={handleSubmit}>
         <Modal.Body>
           <Form.Group className="mb-3">
             <Form.Label>Orden</Form.Label>
-            <div className="mb-2">
-              {/* Eliminado el recuadro de búsqueda de orden */}
-              <Select
-                options={opcionesAgrupadas}
-                onChange={(selected) =>
-                  onInputChange({
-                    target: { name: "orden_id", value: selected.value },
-                  })
-                }
-                placeholder="Seleccione una orden"
-                noOptionsMessage={() => "No se encontraron ordenes"}
-              />
-            </div>
+            <Select
+              options={opcionesAgrupadas}
+              onChange={(selected) => onInputChange({ target: { name: "orden_id", value: selected.value }})}
+              placeholder="Seleccione una orden"
+              noOptionsMessage={() => "No se encontraron ordenes"}
+            />
           </Form.Group>
+
           <Form.Group className="mb-3">
-            <Form.Label>Mecanico</Form.Label>
-            <div className="mb-2">
-              {/* Eliminado el recuadro de búsqueda de mecánico */}
-              <Select
-                options={opcionesAgrupadasMecanico}
-                onChange={(selected) =>
-                  onInputChange({
-                    target: { name: "mecanico_id", value: selected.value },
-                  })
-                }
-                placeholder="Seleccione un mecanico"
-                noOptionsMessage={() => "No se encontraron mecanicos"}
-              />
-            </div>
+            <Form.Label>Mecánico</Form.Label>
+            <Select
+              options={opcionesAgrupadasMecanico}
+              onChange={(selected) => onInputChange({ target: { name: "mecanico_id", value: selected.value }})}
+              placeholder="Seleccione un mecánico"
+              noOptionsMessage={() => "No se encontraron mecánicos"}
+            />
           </Form.Group>
+
           <Form.Group className="mb-3">
             <Form.Label>Estado de Trabajo</Form.Label>
             <Form.Select
@@ -133,39 +100,28 @@ export const ModalCrearTarea = ({ showModal, handleClose }) => {
               onChange={onInputChange}
               required
             >
-              <option value="" disabled hidden>
-                Estado de trabajo
-              </option>
+              <option value="">Seleccione un estado</option>
               <option value="pendiente">Pendiente</option>
               <option value="en_proceso">En Progreso</option>
               <option value="pendiente_de_facturacion">Por Facturar</option>
               <option value="completado">Completado</option>
             </Form.Select>
-            <Form.Text className="text-muted">
-              Es obligatorio el ingreso de un estado de trabajo.
-            </Form.Text>
           </Form.Group>
+
           <Form.Group className="mb-3">
-            <Form.Label>Detalle de la tarea</Form.Label>
+            <Form.Label>Detalle de la tarea (Opcional)</Form.Label>
             <Form.Control
               type="text"
               name="notificacion_al_cliente"
               value={notificacion_al_cliente}
               onChange={onInputChange}
+              placeholder="Ej: Revisión de frenos terminada"
             />
-            <Form.Text className="text-muted">
-              Este campo es opcional, al dejarse vacío se colocará por defecto
-              un 'N/A'.
-            </Form.Text>
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Cancelar
-          </Button>
-          <Button className="btn btn-success" variant="primary" type="submit">
-            Guardar Cambios
-          </Button>
+          <Button variant="secondary" onClick={handleClose}>Cancelar</Button>
+          <Button variant="success" type="submit">Guardar Tarea</Button>
         </Modal.Footer>
       </Form>
     </Modal>

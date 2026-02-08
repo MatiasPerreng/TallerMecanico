@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routes import auth, clientes, vehiculos, ordenes, users
+# Importa el router de tareas (asegúrate de que el nombre coincida con tu archivo en app/routes)
+from app.routes import auth, clientes, vehiculos, ordenes, users, tareas 
 import app.models as models 
 
 Base.metadata.create_all(bind=engine)
@@ -23,12 +24,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# Registra los routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(clientes.router, prefix="/api/clientes", tags=["Clientes"])
 app.include_router(vehiculos.router, prefix="/api/vehiculos", tags=["Vehículos"])
 app.include_router(ordenes.router, prefix="/api/ordenes", tags=["Órdenes"])
 app.include_router(users.router, prefix="/api")
+
+# AGREGA ESTA LÍNEA:
+app.include_router(tareas.router, prefix="/api", tags=["Tareas"])
 
 @app.get("/")
 def root():
