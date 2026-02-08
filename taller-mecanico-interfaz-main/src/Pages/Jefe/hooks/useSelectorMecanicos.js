@@ -9,45 +9,32 @@ export const useSelectorMecanicos = (showModal) => {
     if (showModal && mecanicos.length === 0) {
       startLoadingMecanico();
     }
-  }, [showModal]);
+  }, [showModal, mecanicos.length, startLoadingMecanico]);
 
   const opcionesAgrupadas = useMemo(() => {
-    const grupos = {};
+    if (!mecanicos || mecanicos.length === 0) return [];
 
-    mecanicos.forEach((mecanico) => {
-      const categoriaNombre = "";
+    const opciones = mecanicos
+      .filter((m) =>
+        m.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .map((m) => ({
+        value: m.id,
+        label: `${m.name} | ${
+          m.disponible ? "Disponible" : "No disponible"
+        }`,
+      }));
 
-      if (!grupos[categoriaNombre]) {
-        grupos[categoriaNombre] = {
-          label: categoriaNombre,
-          options: [],
-        };
-      }
-
-      if (mecanico.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-        grupos[categoriaNombre].options.push({
-          value: mecanico.id,
-          label: `${mecanico.name} | ${
-            mecanico.disponible ? "Disponible" : "No disponible"
-          }`,
-        });
-      }
-    });
-
-    return Object.values(grupos);
+    return [
+      {
+        label: "Mecánicos",
+        options: opciones,
+      },
+    ];
   }, [mecanicos, searchTerm]);
-
-  // Recibimos setFormData como argumento
-  const handleMecanicoChange = (selectedOption, setFormData) => {
-    setFormData((prev) => ({
-      ...prev,
-      mecanico_id: selectedOption ? selectedOption.value : "",
-    }));
-  };
 
   return {
     opcionesAgrupadas,
-    handleMecanicoChange,
     searchTerm,
     setSearchTerm,
   };

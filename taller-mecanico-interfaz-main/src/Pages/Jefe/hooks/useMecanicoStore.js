@@ -15,7 +15,7 @@ export const useMecanicoStore = () => {
 
   const startLoadingMecanico = async () => {
     try {
-      const { data } = await tallerMecanicoApi.get(`/mecanicos`);
+      const { data } = await tallerMecanicoApi.get(`/users/mecanicos`);
 
       const mecanicosData = Array.isArray(data) ? data : (data.data || []);
       
