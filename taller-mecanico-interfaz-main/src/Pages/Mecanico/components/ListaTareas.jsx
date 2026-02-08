@@ -1,22 +1,20 @@
-import { Button, Form, Stack, Badge } from "react-bootstrap";
+import { Button, Form, Stack, Badge, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useTareaAsignadaStore } from "../hooks/useTareaAsignadaStore";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { SpinnerComponent } from "../../../components/SpinnerComponent";
 import { useSearch } from "../../../hooks/useSearch";
 
 export const ListaTareas = () => {
   const navigate = useNavigate();
+  const { isLoadingTareasAsignadas, tareasAsignadas, startLoadingTareasAsignadas } = useTareaAsignadaStore();
 
-  const {
-    isLoadingTareasAsignadas,
-    tareasAsignadas,
-    startLoadingTareasAsignadas,
-  } = useTareaAsignadaStore();
+  // Aseguramos que tareasAsignadas sea siempre un array para useSearch
+  const safeTareas = useMemo(() => tareasAsignadas || [], [tareasAsignadas]);
 
   const { filteredData, searchTerm, handleSearchChange } = useSearch(
-    tareasAsignadas,
-    ["orden.cliente.nombre"]
+    safeTareas,
+    ["orden.cliente.nombre", "mecanico.name", "estado_de_trabajo"]
   );
 
   useEffect(() => {
@@ -24,119 +22,76 @@ export const ListaTareas = () => {
   }, []);
 
   const getEstadoColor = (estado) => {
-    switch (estado) {
-      case "pendiente":
-        return "danger";
-      case "en_proceso":
-        return "secondary";
-      case "pendiente_por_pagar":
-        return "warning";
-      case "completado":
-        return "success";
-      default:
-        return "secondary";
-    }
+    const config = {
+      pendiente: "danger",
+      en_proceso: "primary",
+      pendiente_por_pagar: "warning",
+      completado: "success",
+    };
+    return config[estado] || "secondary";
   };
 
   return (
-    <div className="container-fluid px-4 py-3 animate__animated animate__fadeIn">
-      {/* Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
-        <div>
-          <h1 className="h2 mb-1 fw-bold text-primary">Gestión de Tareas</h1>
-          <p className="text-muted mb-0">Seguimiento de trabajos en taller</p>
-        </div>
-      </div>
-      {/* Buscador */}
+    <div className="container-fluid px-4 py-4 animate__animated animate__fadeIn">
       <div className="mb-4">
-        <div className="input-group input-group-lg shadow-sm">
-          <span className="input-group-text bg-white border-end-0">
-            <i className="bi bi-search text-muted"></i>
-          </span>
-          <Form.Control
-            type="search"
-            placeholder="Buscar tareas..."
-            className="border-start-0"
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
-        </div>
+        <h1 className="h3 mb-1 fw-bold text-dark">Gestión de Tareas</h1>
+        <p className="text-muted">Seguimiento de trabajos en taller</p>
       </div>
-      {/* Tabla Responsive */}
-      <div className="card shadow-sm border-0 overflow-hidden">
-        <div className="table-responsive rounded-3">
+
+      <Card className="border-0 shadow-sm mb-4">
+        <Card.Body className="p-3">
+          <div className="input-group">
+            <span className="input-group-text bg-transparent border-end-0"><i className="bi bi-search"></i></span>
+            <Form.Control
+              type="search"
+              placeholder="Buscar tareas..."
+              className="border-start-0 py-2"
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+          </div>
+        </Card.Body>
+      </Card>
+
+      <Card className="shadow-sm border-0">
+        <div className="table-responsive">
           <table className="table table-hover align-middle mb-0">
-            <thead className="bg-danger text-white">
+            <thead className="table-light">
               <tr>
-                <th scope="col">ID</th>
-                <th scope="col" className="ps-4">
-                  Orden ID
-                </th>
-                <th scope="col">Mecánico ID</th>
-                <th scope="col">Estado</th>
-                <th scope="col">Detalle de la tarea</th>
-                <th scope="col" className="text-end pe-4">
-                  Acciones
-                </th>
+                <th className="ps-4">ID</th>
+                <th>ORDEN / CLIENTE</th>
+                <th>MECÁNICO</th>
+                <th>ESTADO</th>
+                <th className="text-end pe-4">ACCIONES</th>
               </tr>
             </thead>
             <tbody>
               {isLoadingTareasAsignadas ? (
-                <SpinnerComponent />
+                <tr><td colSpan="5" className="text-center py-5"><SpinnerComponent /></td></tr>
               ) : (
                 filteredData.map((tarea) => (
-                  <tr key={tarea?.id} className="transition-all">
-                    <td className="ps-4 fw-semibold"># {tarea?.id}</td>
-                    <td className="ps-4 fw-semibold">
-                      # {tarea?.orden_id} - {tarea?.orden.cliente.nombre}
-                    </td>
-
+                  <tr key={tarea?.id}>
+                    <td className="ps-4"><span className="badge bg-light text-dark border">#{tarea?.id}</span></td>
                     <td>
-                      <div className="d-flex align-items-center gap-2">
-                        <i className="bi bi-person-workspace"></i>
-                        <span className="font-monospace">
-                          {tarea?.mecanico_id} - {tarea?.mecanico.name}
-                        </span>
-                      </div>
+                      <div className="fw-bold">Orden #{tarea?.orden_id}</div>
+                      <div className="small text-muted">{tarea?.orden?.cliente?.nombre || "N/A"}</div>
+                    </td>
+                    <td>
+                      <span className="small fw-medium"><i className="bi bi-person me-1"></i>{tarea?.mecanico?.name || "Sin asignar"}</span>
                     </td>
                     <td>
                       <Badge bg={getEstadoColor(tarea?.estado_de_trabajo)}>
-                        {tarea?.estado_de_trabajo}
+                        {tarea?.estado_de_trabajo?.replace('_', ' ').toUpperCase()}
                       </Badge>
                     </td>
-                    <td>
-                      <div className="d-flex flex-column gap-2">
-                        <div>
-                          <span
-                            className="d-inline-block text-truncate"
-                            style={{ maxWidth: "250px" }}
-                          >
-                            <i className="bi bi-calendar-check me-2"></i>
-                            {tarea?.notificacion_al_cliente}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="pe-4">
-                      <Stack
-                        direction="horizontal"
-                        gap={2}
-                        className="justify-content-end"
+                    <td className="pe-4 text-end">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => navigate(`/mecanico/tareas/${tarea?.id}`, { state: { tarea } })}
                       >
-                        <Button
-                          variant="outline-success"
-                          size="sm"
-                          className="d-flex align-items-center gap-2"
-                          onClick={() =>
-                            navigate(`/mecanico/tareas/${tarea?.id}`, {
-                              state: { tarea },
-                            })
-                          }
-                        >
-                          <i className="bi bi-eye"></i>
-                          <span className="d-none d-lg-inline">Detalles</span>
-                        </Button>
-                      </Stack>
+                        Ver Detalles
+                      </Button>
                     </td>
                   </tr>
                 ))
@@ -144,7 +99,7 @@ export const ListaTareas = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

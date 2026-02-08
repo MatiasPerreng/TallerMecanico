@@ -5,33 +5,41 @@ import { AppCliente } from "../pages/cliente/AppCliente";
 import { PrivateRoute } from "./PrivateRoute";
 import { useAuthStore } from "../hooks/useAuthStore";
 import { useEffect } from "react";
+import { SpinnerComponent } from "../components/SpinnerComponent";
 
 export const AppRouter = () => {
-  const { checkAuthToken } = useAuthStore();
+  const { status, checkAuthToken } = useAuthStore();
 
   useEffect(() => {
     checkAuthToken();
   }, []);
 
+  // Bloqueamos la navegación hasta que sepamos si el usuario es válido
+  if (status === 'checking') {
+    return (
+      <div className="vh-100 d-flex justify-content-center align-items-center">
+        <SpinnerComponent />
+      </div>
+    );
+  }
+
   return (
-    <>
-      <Routes>
-        {/* Rutas para CLIENTES */}
-        <Route path="/*" element={<AppCliente />} />
+    <Routes>
+      {/* Rutas Privadas para JEFES */}
+      <Route element={<PrivateRoute allowedRoles={["jefe"]} />}>
+        <Route path="/jefe/*" element={<AppJefe />} />
+      </Route>
 
-        {/* Cualquier otra URL redirige al login */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* Rutas Privadas para MECÁNICOS */}
+      <Route element={<PrivateRoute allowedRoles={["mecanico"]} />}>
+        <Route path="/mecanico/*" element={<AppMecanico />} />
+      </Route>
 
-        {/* Rutas para JEFES */}
-        <Route element={<PrivateRoute allowedRoles={["jefe"]} />}>
-          <Route path="/jefe/*" element={<AppJefe />} />
-        </Route>
+      {/* Rutas Públicas / Cliente */}
+      <Route path="/*" element={<AppCliente />} />
 
-        {/* Rutas para MECÁNICOS */}
-        <Route element={<PrivateRoute allowedRoles={["mecanico"]} />}>
-          <Route path="/mecanico/*" element={<AppMecanico />} />
-        </Route>
-      </Routes>
-    </>
+      {/* Redirección por defecto */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };

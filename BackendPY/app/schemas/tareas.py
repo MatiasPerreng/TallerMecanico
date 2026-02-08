@@ -2,6 +2,22 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
+
+class ClienteRelacion(BaseModel):
+    nombre: str
+    model_config = ConfigDict(from_attributes=True)
+
+class OrdenRelacion(BaseModel):
+    id: int
+    cliente: Optional[ClienteRelacion] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class MecanicoRelacion(BaseModel):
+    id: int
+    name: str
+    model_config = ConfigDict(from_attributes=True)
+
+
 class TareaBase(BaseModel):
     orden_id: int
     mecanico_id: int
@@ -20,6 +36,7 @@ class TareaUpdate(BaseModel):
 class TareaOut(TareaBase):
     id: int
     created_at: datetime
-
+    orden: Optional[OrdenRelacion] = None
+    mecanico: Optional[MecanicoRelacion] = None
 
     model_config = ConfigDict(from_attributes=True)
