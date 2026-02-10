@@ -24,7 +24,8 @@ export const useCategoriaStore = () => {
   const startLoadingCategoria = async () => {
     try {
       dispatch(onStartLoading());
-      const { data } = await tallerMecanicoApi.get(`/categorias`);
+
+      const { data } = await tallerMecanicoApi.get("/inventario/categorias");
 
       const categoriasData = Array.isArray(data) ? data : (data.data || []);
       dispatch(onLoadCategorias(categoriasData));
@@ -38,11 +39,13 @@ export const useCategoriaStore = () => {
   const startSavingCategoria = async (categoria) => {
     try {
       if (categoria.id) {
-        await tallerMecanicoApi.put(`/categorias/${categoria.id}`, categoria);
+
+        await tallerMecanicoApi.put(`/inventario/categorias/${categoria.id}`, categoria);
         dispatch(onUpdateCategoria({ ...categoria, user }));
         Swal.fire("Éxito", "Categoría actualizada", "success");
       } else {
-        const { data } = await tallerMecanicoApi.post("/categorias", categoria);
+
+        const { data } = await tallerMecanicoApi.post("/inventario/categorias", categoria);
         dispatch(onAddNewCategoria({ ...data }));
         Swal.fire("Éxito", "Categoría creada", "success");
       }
@@ -55,7 +58,8 @@ export const useCategoriaStore = () => {
 
   const startDeletingCategoria = async (categoria) => {
     try {
-      await tallerMecanicoApi.delete(`/categorias/${categoria.id}`);
+  
+      await tallerMecanicoApi.delete(`/inventario/categorias/${categoria.id}`);
       dispatch(onDeleteCategoria());
       Swal.fire("Eliminado", "Categoría borrada", "success");
     } catch (error) {
@@ -69,7 +73,7 @@ export const useCategoriaStore = () => {
     activeCategoria,
     categorias,
     isLoadingCategoria,
-    hasClienteSelected: !!activeCategoria,
+    hasCategoriaSelected: !!activeCategoria,
     setActiveCategoria,
     startLoadingCategoria,
     startSavingCategoria,

@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, String, TIMESTAMP, Boolean, Enum
+from sqlalchemy import Column, String, Boolean, Enum
 from sqlalchemy.orm import relationship
 from app.database import Base
 from sqlalchemy.dialects.mysql import BIGINT
@@ -19,4 +19,4 @@ class User(Base):
     rol = Column(Enum(UserRole), default=UserRole.mecanico, nullable=False)
 
 
-    tareas = relationship("Tarea", back_populates="mecanico")
+    tareas_asignadas = relationship("Tarea", back_populates="mecanico")
