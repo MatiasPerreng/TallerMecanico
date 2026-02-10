@@ -16,16 +16,7 @@ export const productoSlice = createSlice({
     },
     onLoadProductos: (state, { payload = [] }) => {
       state.isLoadingProducto = false;
-      //state.productos = payload;
-      payload.forEach((producto) => {
-        const exists = state.productos.some(
-          (dbProducto) => dbProducto.id === producto.id
-        );
-
-        if (!exists) {
-          state.productos.push(producto);
-        }
-      });
+      state.productos = payload;
     },
     onAddNewProducto: (state, { payload }) => {
       state.productos.push(payload);
@@ -38,6 +29,7 @@ export const productoSlice = createSlice({
         }
         return producto;
       });
+      state.activeProducto = null;
     },
     onDeleteProducto: (state) => {
       if (state.activeProducto) {
@@ -47,10 +39,14 @@ export const productoSlice = createSlice({
         state.activeProducto = null;
       }
     },
+    onLogoutProducto: (state) => {
+      state.isLoadingProducto = false;
+      state.productos = [];
+      state.activeProducto = null;
+    }
   },
 });
 
-// Action creators are generated for each case reducer function
 export const {
   onSetActiveProducto,
   onLoadProductos,
@@ -58,4 +54,5 @@ export const {
   onUpdateProducto,
   onDeleteProducto,
   onStartLoading,
+  onLogoutProducto,
 } = productoSlice.actions;

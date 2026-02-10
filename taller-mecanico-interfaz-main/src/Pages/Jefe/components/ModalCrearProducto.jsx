@@ -23,133 +23,128 @@ export const ModalCrearProducto = ({ showModal, handleClose }) => {
     stock,
     precio,
     onInputChange,
+    onResetForm,
   } = useForm(createProductoField);
 
-  const { opcionesAgrupadas, setSearchTerm } = useSelectorCategorias(showModal);
-
+  const { opcionesAgrupadas } = useSelectorCategorias(showModal);
   const { startSavingProducto } = useProductoStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    startSavingProducto({
-      categoria_id,
-      nombre,
-      detalles,
-      marca,
-      stock,
-      precio,
-    });
+    if (!categoria_id) {
+      return Swal.fire("Error", "Debe seleccionar una categoría", "error");
+    }
 
-    Swal.fire(
-      "Ok",
-      "Producto creado. Se recargará la página para guardar los cambios.",
-      "success"
-    );
-    setTimeout(() => {
-      location.reload();
-    }, 1500);
+    const productoData = {
+      categoria_id: parseInt(categoria_id),
+      nombre: nombre.trim(),
+      detalles: detalles.trim() || "N/A",
+      marca: marca.trim(),
+      stock: parseInt(stock),
+      precio: parseFloat(precio),
+    };
 
-    handleClose();
+    const success = await startSavingProducto(productoData);
+
+    if (success) {
+      Swal.fire("Ok", "Producto creado correctamente", "success");
+      onResetForm();
+      handleClose();
+    }
   };
 
   return (
-    <>
-      {/* Modal para agregar nueva orden */}
-      <Modal show={showModal} onHide={handleClose} centered backdrop="static">
-        <Modal.Header closeButton>
-          <Modal.Title>Crear nuevo producto</Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleSubmit}>
-          <Modal.Body>
-            <Form.Group className="mb-3">
-              <Form.Label>Categoria</Form.Label>
-              <div className="mb-2">
-                {/* SOLO ELIMINADO EL INPUT DE BÚSQUEDA */}
-                <Select
-                  options={opcionesAgrupadas}
-                  onChange={(selected) =>
-                    onInputChange({
-                      target: { name: "categoria_id", value: selected.value },
-                    })
-                  }
-                  placeholder="Seleccione una categoria"
-                  noOptionsMessage={() => "No se encontraron categorias"}
-                />
-              </div>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Nombre</Form.Label>
-              <Form.Control
-                type="text"
-                name="nombre"
-                value={nombre}
-                onChange={onInputChange}
-                required
+    <Modal show={showModal} onHide={handleClose} centered backdrop="static">
+      <Modal.Header closeButton>
+        <Modal.Title>Crear nuevo producto</Modal.Title>
+      </Modal.Header>
+      <Form onSubmit={handleSubmit}>
+        <Modal.Body>
+          <Form.Group className="mb-3">
+            <Form.Label>Categoria</Form.Label>
+            <div className="mb-2">
+              <Select
+                options={opcionesAgrupadas}
+                onChange={(selected) =>
+                  onInputChange({
+                    target: { name: "categoria_id", value: selected.value },
+                  })
+                }
+                placeholder="Seleccione una categoria"
+                noOptionsMessage={() => "No se encontraron categorias"}
               />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Detalles (Opcional)</Form.Label>
-              <Form.Control
-                type="text"
-                name="detalles"
-                value={detalles}
-                onChange={onInputChange}
-              />
-              <Form.Text className="text-muted">
-                Este campo es opcional, al dejarse vacío se colocará por defecto
-                un 'N/A'.
-              </Form.Text>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Marca</Form.Label>
-              <Form.Control
-                type="text"
-                name="marca"
-                value={marca}
-                onChange={onInputChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Stock</Form.Label>
-              <Form.Control
-                type="number"
-                name="stock"
-                value={stock}
-                onChange={onInputChange}
-                required
-              />
-              <Form.Text className="text-muted">
-                Solo se permiten números enteros. No ingrese decimales.
-              </Form.Text>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Precio</Form.Label>
-              <Form.Control
-                type="number"
-                placeholder=""
-                name="precio"
-                value={precio}
-                onChange={onInputChange}
-                required
-              />
-              <Form.Text className="text-muted">
-                Si va a ingresar decimales, utilice el punto (.) como separador.
-              </Form.Text>
-            </Form.Group>
-          </Modal.Body>
+            </div>
+          </Form.Group>
 
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
-              Cancelar
-            </Button>
-            <Button className="btn btn-success" variant="primary" type="submit">
-              Guardar Cambios
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
-    </>
+          <Form.Group className="mb-3">
+            <Form.Label>Nombre</Form.Label>
+            <Form.Control
+              type="text"
+              name="nombre"
+              value={nombre}
+              onChange={onInputChange}
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Detalles (Opcional)</Form.Label>
+            <Form.Control
+              type="text"
+              name="detalles"
+              value={detalles}
+              onChange={onInputChange}
+            />
+            <Form.Text className="text-muted">
+              Campo opcional, por defecto 'N/A'.
+            </Form.Text>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Marca</Form.Label>
+            <Form.Control
+              type="text"
+              name="marca"
+              value={marca}
+              onChange={onInputChange}
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Stock</Form.Label>
+            <Form.Control
+              type="number"
+              name="stock"
+              value={stock}
+              onChange={onInputChange}
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Precio</Form.Label>
+            <Form.Control
+              type="number"
+              step="0.01"
+              name="precio"
+              value={precio}
+              onChange={onInputChange}
+              required
+            />
+          </Form.Group>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Cancelar
+          </Button>
+          <Button className="btn btn-success" type="submit">
+            Guardar Cambios
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal>
   );
 };

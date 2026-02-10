@@ -25,8 +25,8 @@ export const useProductoStore = () => {
 
   const startLoadingProducto = async () => {
     try {
-      const { data } = await tallerMecanicoApi.get("/productos");
-      dispatch(onLoadProductos(data.data));
+      const { data } = await tallerMecanicoApi.get("/inventario/productos");
+      dispatch(onLoadProductos(data));
     } catch (error) {
       console.log("Error cargando productos", error);
     }
@@ -35,27 +35,31 @@ export const useProductoStore = () => {
   const startSavingProducto = async (producto) => {
     try {
       if (producto.id) {
-        const { data } = await tallerMecanicoApi.put(`/productos/${producto.id}`, producto);
-        dispatch(onUpdateProducto({ ...data.data }));
-        return data.data;
+        const { data } = await tallerMecanicoApi.put(`/inventario/productos/${producto.id}`, producto);
+        dispatch(onUpdateProducto({ ...data }));
+        return true;
       } else {
-        const { data } = await tallerMecanicoApi.post("/productos", producto);
-        dispatch(onAddNewProducto({ ...data.data }));
-        return data.data;
+        const { data } = await tallerMecanicoApi.post("/inventario/productos", producto);
+        dispatch(onAddNewProducto({ ...data }));
+        return true;
       }
     } catch (error) {
       console.log(error);
-      Swal.fire("Error al guardar", "Error", "error");
+      const msg = error.response?.data?.detail || "Error al conectar con el servidor";
+      Swal.fire("Error al guardar", msg, "error");
+      return false;
     }
   };
 
   const startDeletingProducto = async () => {
     try {
-      await tallerMecanicoApi.delete(`/productos/${activeProducto.id}`);
+      if (!activeProducto) return;
+      await tallerMecanicoApi.delete(`/inventario/productos/${activeProducto.id}`);
       dispatch(onDeleteProducto());
+      Swal.fire("Eliminado", "Producto borrado correctamente", "success");
     } catch (error) {
       console.log(error);
-      Swal.fire("Error al eliminar", "Error", "error");
+      Swal.fire("Error al eliminar", "No se pudo eliminar el producto", "error");
     }
   };
 
@@ -69,4 +73,4 @@ export const useProductoStore = () => {
     startSavingProducto,
     startDeletingProducto
   };
-}
+};
