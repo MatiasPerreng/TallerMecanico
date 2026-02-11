@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.users import User
-from app.schemas.users import UserResponse, UserLogin 
+from app.schemas.users import UserResponse, UserLogin, UserCreate # Asegúrate de tener UserCreate
 from passlib.context import CryptContext
 
 router = APIRouter()
@@ -36,14 +36,31 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
     }
 
 
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register(user_in: UserCreate, db: Session = Depends(get_db)):
+    user_exists = db.query(User).filter(User.email == user_in.email).first()
+    if user_exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El correo electrónico ya está registrado"
+        )
+    
+
+    new_user = User(
+        name=user_in.name,
+        email=user_in.email,
+        password=pwd_context.hash(user_in.password), # Hasheo automático
+        rol="JEFE" 
+    )
+    
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+
 @router.get("/usuario", response_model=UserResponse)
 def get_usuario(db: Session = Depends(get_db)):
-    """
-    Este endpoint evita el 404 que causa el deslogueo.
-    Por ahora, como estamos probando, devolveremos el primer usuario 
-    o uno basado en un ID temporal para que el frontend no falle.
-    """
-    # TODO: 
     user = db.query(User).first() 
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
