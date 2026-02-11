@@ -25,7 +25,6 @@ export const ModalCrearUsuario = ({ showModal, handleClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-  
     if (registerPassword.length < 8) {
       return Swal.fire("Error", "La contraseña debe tener al menos 8 caracteres", "error");
     }
@@ -34,18 +33,20 @@ export const ModalCrearUsuario = ({ showModal, handleClose }) => {
       return Swal.fire("Error", "Las contraseñas no coinciden", "error");
     }
 
-
-    const resp = await startRegister({
+  
+    const { ok, msg } = await startRegister({
       name: registerName,
       email: registerEmail,
       password: registerPassword,
     });
 
-
-    if ( resp ) {
-      Swal.fire("Ok", "Usuario creado correctamente", "success");
+    if ( ok ) {
+      Swal.fire("Éxito", "Usuario creado correctamente", "success");
       onResetForm();
       handleClose();
+    } else {
+     
+      Swal.fire("Error al crear usuario", msg, "error");
     }
   };
 

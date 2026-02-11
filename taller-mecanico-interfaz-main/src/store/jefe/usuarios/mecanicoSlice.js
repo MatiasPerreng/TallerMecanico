@@ -8,23 +8,51 @@ export const mecanicoSlice = createSlice({
     activeMecanico: null,
   },
   reducers: {
+
     onSetActiveMecanico: (state, { payload }) => {
-      state.activeTarea = payload;
+      state.activeMecanico = payload;
     },
+
+
+    onAddNewMecanico: (state, { payload }) => {
+      state.mecanicos.push(payload);
+      state.activeMecanico = null;
+    },
+
+
     onLoadMecanicos: (state, { payload = [] }) => {
       state.isLoadingMecanico = false;
-      payload.forEach((mecanico) => {
-        const exists = state.mecanicos.some(
-          (dbMecanico) => dbMecanico.id === mecanico.id
-        );
+      
+      state.mecanicos = payload;
+    },
 
-        if (!exists) {
-          state.mecanicos.push(mecanico);
+    
+    onUpdateMecanico: (state, { payload }) => {
+      state.mecanicos = state.mecanicos.map((mecanico) => {
+        if (mecanico.id === payload.id) {
+          return payload;
         }
+        return mecanico;
       });
+    },
+
+   
+    onDeleteMecanico: (state) => {
+      if (state.activeMecanico) {
+        state.mecanicos = state.mecanicos.filter(
+          (mecanico) => mecanico.id !== state.activeMecanico.id
+        );
+        state.activeMecanico = null;
+      }
     },
   },
 });
 
-// Action creators are generated for each case reducer function
-export const { onSetActiveMecanico, onLoadMecanicos } = mecanicoSlice.actions;
+
+export const { 
+    onSetActiveMecanico, 
+    onLoadMecanicos, 
+    onAddNewMecanico, 
+    onUpdateMecanico, 
+    onDeleteMecanico 
+} = mecanicoSlice.actions;

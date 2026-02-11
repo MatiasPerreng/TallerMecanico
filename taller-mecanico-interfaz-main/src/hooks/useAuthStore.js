@@ -6,9 +6,8 @@ import {
   onLogout,
   onStartLoading,
   onClearErrorMessage,
-  onSetErrorMessage,
-  onChecking, // Asegúrate de tenerlo importado
 } from "../store/auth/authSlice";
+import { onAddNewMecanico } from "../store/jefe/usuarios/mecanicoSlice"; // <--- Importante
 
 export const useAuthStore = () => {
   const { status, user, errorMessage, isLoadingAuth } = useSelector((state) => state.auth);
@@ -35,43 +34,38 @@ export const useAuthStore = () => {
   };
 
   const startRegister = async ({ name, email, password }) => {
-    dispatch(onStartLoading());
     try {
-      await tallerMecanicoApi.post("/auth/register", { name, email, password });
-      dispatch(onSetErrorMessage(null));
+      // 1. Realizar el post al backend
+      const { data } = await tallerMecanicoApi.post("/auth/register", { name, email, password });
+      
+      // 2. Si la respuesta es exitosa, agregamos al usuario al estado de mecánicos
+      // Usamos el ID devuelto por el backend (data.id)
+      dispatch(onAddNewMecanico({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        rol: data.rol,
+        disponible: data.disponible ?? true
+      }));
+
+      return { ok: true };
     } catch (error) {
-      dispatch(onAuthError(error.response?.data?.detail || "Error en registro"));
-      setTimeout(() => dispatch(onClearErrorMessage()), 3000);
+      console.error(error);
+      const msg = error.response?.data?.detail || "Error en registro";
+      return { ok: false, msg };
     }
   };
 
   const checkAuthToken = async () => {
     const token = localStorage.getItem("token");
-    
-    // Si no hay token, pasamos a not-authenticated para quitar spinner
     if (!token) return dispatch(onLogout());
 
     try {
       const { data } = await tallerMecanicoApi.get("/auth/usuario");
       dispatch(onLogin(data));
     } catch (error) {
-      console.error("Error en checkAuthToken:", error);
-
-      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-        // Token inválido: Limpieza total
-        localStorage.clear();
-        dispatch(onLogout());
-      } else {
-        // ERROR DE SERVIDOR/RED (500, 404, etc.)
-        // Si ya tenemos un usuario en el estado de Redux, lo mantenemos logueado.
-        // Si no, forzamos logout para que no se quede el spinner infinito.
-        if (user && user.uid) {
-          dispatch(onLogin(user)); 
-        } else {
-          // Si es el primer arranque y falla el servidor, hay que sacar el spinner:
-          dispatch(onLogout("Error de conexión con el servidor"));
-        }
-      }
+      localStorage.clear();
+      dispatch(onLogout());
     }
   };
 
@@ -81,13 +75,11 @@ export const useAuthStore = () => {
   };
 
   return {
-    //* Propiedades
     status,
     user,
     errorMessage,
     isLoadingAuth,
 
-    //* Métodos
     startLogin,
     startRegister,
     checkAuthToken,
